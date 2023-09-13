@@ -15,11 +15,12 @@ class Context(dict):
 class CertStreamClient(WebSocketApp):
     _context = Context()
 
-    def __init__(self, message_callback, url, skip_heartbeats=True, on_open=None, on_error=None):
+    def __init__(self, message_callback, url, skip_heartbeats=True, on_open=None, on_error=None, convert_json=True):
         self.message_callback = message_callback
         self.skip_heartbeats = skip_heartbeats
         self.on_open_handler = on_open
         self.on_error_handler = on_error
+        self.convert_json = convert_json
         super(CertStreamClient, self).__init__(
             url=url,
             on_open=self._on_open,
@@ -33,7 +34,10 @@ class CertStreamClient(WebSocketApp):
             self.on_open_handler()
 
     def _on_message(self, _, message):
-        frame = json.loads(message)
+        if self.convert_json:
+            frame = json.loads(message)
+        else:
+            frame = message
 
         if frame.get('message_type', None) == "heartbeat" and self.skip_heartbeats:
             return
@@ -47,7 +51,7 @@ class CertStreamClient(WebSocketApp):
             self.on_error_handler(ex)
         certstream_logger.error("Error connecting to CertStream - {} - Sleeping for a few seconds and trying again...".format(ex))
 
-def listen_for_events(message_callback, url, skip_heartbeats=True, setup_logger=True, on_open=None, on_error=None, **kwargs):
+def listen_for_events(message_callback, url, skip_heartbeats=True, setup_logger=True, on_open=None, on_error=None, convert_json=True, **kwargs):
     try:
         while True:
             c = CertStreamClient(message_callback, url, skip_heartbeats=skip_heartbeats, on_open=on_open, on_error=on_error)

@@ -54,7 +54,7 @@ class CertStreamClient(WebSocketApp):
 def listen_for_events(message_callback, url, skip_heartbeats=True, setup_logger=True, on_open=None, on_error=None, convert_json=True, **kwargs):
     try:
         while True:
-            c = CertStreamClient(message_callback, url, skip_heartbeats=skip_heartbeats, on_open=on_open, on_error=on_error)
+            c = CertStreamClient(message_callback, url, skip_heartbeats=skip_heartbeats, on_open=on_open, on_error=on_error, convert_json=convert_json)
             c.run_forever(ping_interval=15, **kwargs)
             time.sleep(5)
     except KeyboardInterrupt:
